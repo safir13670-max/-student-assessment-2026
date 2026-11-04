@@ -405,8 +405,10 @@ async function loadData() {
 
   await loadHistory();
 }
-
+let editingSubmissionId = null;
+let currentSubmissions = [];
 async function submitAnswer() {
+  async function submitAnswer() {
   const assignmentId = document.getElementById("assignmentSelect").value;
   const answer = document.getElementById("answer").value.trim();
 
@@ -415,20 +417,37 @@ async function submitAnswer() {
     return;
   }
 
-  const response = await api("submissions", "POST", {
-    assignment_id: assignmentId,
-    student_id: userId,
-    answer_text: answer,
-    status: "submitted"
-  });
+  let response;
+
+  if (editingSubmissionId) {
+    response = await api(
+      "submissions?id=eq." + encodeURIComponent(editingSubmissionId) +
+      "&student_id=eq." + encodeURIComponent(userId),
+      "PATCH",
+      {
+        answer_text: answer,
+        submitted_at: new Date().toISOString(),
+        status: "submitted"
+      }
+    );
+  } else {
+    response = await api("submissions", "POST", {
+      assignment_id: assignmentId,
+      student_id: userId,
+      answer_text: answer,
+      status: "submitted"
+    });
+  }
 
   if (!response.ok) {
-    showMessage("submitMessage", "ارسال پاسخ انجام نشد. ممکن است دسترسی ثبت پاسخ نیاز به تنظیم داشته باشد.");
+    showMessage("submitMessage", "ثبت یا ویرایش پاسخ انجام نشد.");
     return;
   }
 
+  editingSubmissionId = null;
   document.getElementById("answer").value = "";
-  showMessage("submitMessage", "پاسخ شما با موفقیت ثبت شد.");
+
+  showMessage("submitMessage", "پاسخ با موفقیت ثبت شد.");
   await loadHistory();
 }
 
@@ -451,13 +470,36 @@ async function loadHistory() {
   }
 
   document.getElementById("history").innerHTML = submissions.map(s => {
-    const assignment = currentAssignments.find(a => a.id === s.assignment_id);
-    return `<div class="item"><b>${escapeHTML(assignment?.title || "تکلیف")}</b>
-      <p>${escapeHTML(s.answer_text || "")}</p>
-      <p class="muted">وضعیت: ${escapeHTML(s.status || "ثبت‌شده")}</p></div>`;
-  }).join("");
-}
+  currentSubmissions = submissions;
 
+document.getElementById("history").innerHTML = submissions.map(s => {
+  const assignment = currentAssignments.find(a => a.id === s.assignment_id);
+
+  return `<div class="item">
+    <b>${escapeHTML(assignment?.title || "تکلیف")}</b>
+    <p>${escapeHTML(s.answer_text || "")}</p>
+    <p class="muted">وضعیت: ${escapeHTML(s.status || "ثبت‌شده")}</p>
+    <button type="button" onclick="editSubmission('${s.id}')">
+      ویرایش پاسخ
+    </button>
+  </div>`;
+}).join("");
+}
+function editSubmission(id) {
+  const submission = currentSubmissions.find(s => s.id === id);
+
+  if (!submission) {
+    showMessage("submitMessage", "پاسخ موردنظر پیدا نشد.");
+    return;
+  }
+
+  editingSubmissionId = submission.id;
+
+  document.getElementById("assignmentSelect").value = submission.assignment_id;
+  document.getElementById("answer").value = submission.answer_text || "";
+
+  showMessage("submitMessage", "پاسخ را اصلاح کنید و دوباره دکمه ارسال پاسخ را بزنید.");
+}
 function escapeHTML(value) {
   return String(value).replace(/[&<>"']/g, c => ({
     "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
