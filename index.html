@@ -3,60 +3,265 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سنجش عملکردی دانشجویان</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سامانه سنجش عملکردی دانشجویان</title>
+
 <style>
-body{font-family:tahoma;background:#eef2f7;margin:0;color:#183047}
-header{background:#164e63;color:white;text-align:center;padding:25px}
-main{max-width:650px;margin:30px auto;padding:15px}
-.card{background:white;padding:25px;border-radius:14px;margin:15px 0}
-input{box-sizing:border-box;width:100%;padding:13px;margin:10px 0;border:1px solid #ccc;border-radius:8px}
-button{background:#087e8b;color:white;border:0;padding:13px 25px;border-radius:8px;width:100%}
-#message{line-height:2}
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background: linear-gradient(135deg, #e8f1f8, #dce9f2);
+  color: #183047;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: #164e63;
+  color: white;
+  text-align: center;
+  padding: 28px 15px;
+}
+
+header h1 {
+  font-size: 23px;
+  margin: 0 0 10px;
+}
+
+header p {
+  margin: 0;
+  font-size: 14px;
+  color: #d8edf2;
+}
+
+main {
+  width: 100%;
+  max-width: 480px;
+  margin: 45px auto;
+  padding: 15px;
+  flex: 1;
+}
+
+.card {
+  background: white;
+  padding: 30px 25px;
+  border-radius: 18px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.09);
+}
+
+.card h2 {
+  text-align: center;
+  color: #164e63;
+  font-size: 21px;
+  margin: 0 0 12px;
+}
+
+.description {
+  text-align: center;
+  color: #718096;
+  font-size: 13px;
+  line-height: 2;
+  margin-bottom: 25px;
+}
+
+label {
+  display: block;
+  margin: 15px 0 8px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #cbd5e0;
+  border-radius: 9px;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 15px;
+  outline: none;
+  direction: rtl;
+}
+
+input:focus {
+  border-color: #087e8b;
+  box-shadow: 0 0 0 3px rgba(8,126,139,.12);
+}
+
+button {
+  width: 100%;
+  margin-top: 24px;
+  padding: 15px;
+  border: none;
+  border-radius: 9px;
+  background: #087e8b;
+  color: white;
+  font-family: Tahoma, Arial, sans-serif;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #066875;
+}
+
+button:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+#message {
+  text-align: center;
+  font-size: 13px;
+  line-height: 2;
+  margin-top: 18px;
+  overflow-wrap: anywhere;
+}
+
+footer {
+  text-align: center;
+  padding: 18px;
+  color: #718096;
+  font-size: 12px;
+}
+
+@media(max-width: 500px) {
+  main {
+    margin: 25px auto;
+  }
+
+  header h1 {
+    font-size: 19px;
+  }
+
+  .card {
+    padding: 25px 18px;
+  }
+}
 </style>
 </head>
+
 <body>
+
 <header>
-<h2>سامانه سنجش عملکردی دانشجویان</h2>
-<p>ارزیابی و پیگیری پیشرفت تحصیلی</p>
+  <h1>سامانه سنجش عملکردی دانشجویان</h1>
+  <p>ارزیابی، بازخورد و پیگیری پیشرفت تحصیلی</p>
 </header>
+
 <main>
-<div class="card">
-<h3>ورود دانشجو</h3>
-<input id="code" placeholder="کد دانشجویی">
-<input id="password" type="password" placeholder="رمز عبور">
-<button id="login">ورود به سامانه</button>
-<p id="message"></p>
-</div>
+  <section class="card">
+    <h2>ورود دانشجو</h2>
+
+    <p class="description">
+      برای ورود به پرونده آموزشی خود،
+      کد دانشجویی و رمز عبور را وارد کنید.
+    </p>
+
+    <label for="code">کد دانشجویی</label>
+    <input
+      id="code"
+      type="text"
+      placeholder="کد دانشجویی خود را وارد کنید"
+      autocomplete="username"
+    >
+
+    <label for="password">رمز عبور</label>
+    <input
+      id="password"
+      type="password"
+      placeholder="رمز عبور خود را وارد کنید"
+      autocomplete="current-password"
+    >
+
+    <button id="login" type="button">
+      ورود به سامانه
+    </button>
+
+    <p id="message" role="status"></p>
+  </section>
 </main>
+
+<footer>
+  سامانه سنجش عملکردی دانشجویان
+</footer>
+
 <script>
-document.getElementById("login").onclick=async()=>{
- const code=document.getElementById("code").value.trim();
- const password=document.getElementById("password").value;
- const msg=document.getElementById("message");
- const btn=document.getElementById("login");
- if(!code||!password){msg.textContent="کد و رمز را وارد کنید.";return;}
- btn.disabled=true;
- msg.textContent="در حال بررسی اطلاعات...";
- try{
-  const response=await fetch(
-   "https://pgytmizdaldrcnfpksty.supabase.co/functions/v1/student-code-login",
-   {
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({code,password})
-   }
-  );
-  const data=await response.json();
-  if(!response.ok)throw new Error(data.error||"ورود ناموفق بود.");
-  sessionStorage.setItem("student_access_token",data.access_token);
-  msg.textContent="ورود موفق بود. حساب دانشجویی شما شناسایی شد.";
- }catch(error){
-  msg.textContent=error.message||"ارتباط با سامانه برقرار نشد.";
- }finally{
-  btn.disabled=false;
- }
-};
+const loginButton = document.getElementById("login");
+const message = document.getElementById("message");
+
+loginButton.addEventListener("click", async function() {
+  const code = document.getElementById("code").value.trim();
+  const password = document.getElementById("password").value;
+
+  if (!code || !password) {
+    message.style.color = "#c0392b";
+    message.textContent = "لطفاً کد دانشجویی و رمز عبور را وارد کنید.";
+    return;
+  }
+
+  loginButton.disabled = true;
+  loginButton.textContent = "در حال بررسی...";
+  message.style.color = "#164e63";
+  message.textContent = "لطفاً منتظر بمانید.";
+
+  try {
+    const response = await fetch(
+      "https://pgytmizdaldrcnfpksty.supabase.co/functions/v1/student-code-login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          code: code,
+          password: password
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error || "اطلاعات ورود صحیح نیست."
+      );
+    }
+
+    if (!data.access_token) {
+      throw new Error("توکن ورود دریافت نشد.");
+    }
+
+    sessionStorage.setItem(
+      "student_access_token",
+      data.access_token
+    );
+
+    if (data.refresh_token) {
+      sessionStorage.setItem(
+        "student_refresh_token",
+        data.refresh_token
+      );
+    }
+
+    message.style.color = "#16834a";
+    message.textContent =
+      "ورود موفق بود. احراز هویت انجام شد.";
+
+  } catch (error) {
+    message.style.color = "#c0392b";
+    message.textContent =
+      error.message || "ارتباط با سرور برقرار نشد.";
+  } finally {
+    loginButton.disabled = false;
+    loginButton.textContent = "ورود به سامانه";
+  }
+});
 </script>
+
 </body>
 </html>
+
