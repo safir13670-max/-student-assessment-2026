@@ -578,6 +578,7 @@ await loadTeacherCourses();
   }
 }
   async function createAssignment() {
+    window.createAssignment = createAssignment;
   const courseId = document.getElementById("teacherCourseSelect").value;
   const title = document.getElementById("assignmentTitle").value.trim();
   const instructions = document.getElementById("assignmentInstructions").value.trim();
