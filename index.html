@@ -89,7 +89,45 @@ h2{color:#174a7c}
 </div>
 </section>
 </main>
+<section id="teacherDashboard" class="hidden">
 
+  <div class="card">
+    <h2>پنل مدیریت مدرس</h2>
+    <p>به پنل مدیریت سامانه خوش آمدید.</p>
+    <button class="secondary" onclick="teacherLogout()">خروج از پنل مدرس</button>
+  </div>
+
+  <div class="card">
+    <h2>ایجاد درس جدید</h2>
+    <input id="courseTitle" placeholder="عنوان درس">
+    <textarea id="courseDescription" rows="3" placeholder="توضیحات درس"></textarea>
+    <button onclick="createCourse()">ثبت درس</button>
+    <div id="courseMessage"></div>
+  </div>
+
+  <div class="card">
+    <h2>فهرست درس‌ها</h2>
+    <div id="teacherCourses">درس‌ها اینجا نمایش داده می‌شوند.</div>
+  </div>
+
+  <div class="card">
+    <h2>تعریف تکلیف</h2>
+    <select id="teacherCourseSelect">
+      <option value="">انتخاب درس</option>
+    </select>
+    <input id="assignmentTitle" placeholder="عنوان تکلیف">
+    <textarea id="assignmentInstructions" rows="4" placeholder="شرح تکلیف"></textarea>
+    <input id="assignmentDue" type="datetime-local">
+    <button onclick="createAssignment()">ثبت تکلیف</button>
+    <div id="assignmentMessage"></div>
+  </div>
+
+  <div class="card">
+    <h2>پاسخ‌های دانشجویان</h2>
+    <div id="teacherSubmissions">پاسخ‌ها اینجا نمایش داده می‌شوند.</div>
+  </div>
+
+</section>
 <script>
 const SUPABASE_URL = "https://pgytmizdaldrcnfpksty.supabase.co";
 const SUPABASE_KEY = "sb_publishable_YVxKtYaPx8FppNQw7js9eg_6TCpOTrF";
