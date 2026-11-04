@@ -482,6 +482,100 @@ const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
 
   showMessage("teacherMessage", "از پنل مدرس خارج شدید.");
 }
+ async function createCourse() {
+  const title = document.getElementById("courseTitle").value.trim();
+  const description = document.getElementById("courseDescription").value.trim();
+
+  const teacherToken = sessionStorage.getItem("teacherToken");
+  const teacherUserId = sessionStorage.getItem("teacherUserId");
+
+  if (!title) {
+    showMessage("courseMessage", "عنوان درس را وارد کنید.");
+    return;
+  }
+
+  if (!teacherToken || !teacherUserId) {
+    showMessage("courseMessage", "لطفاً دوباره وارد پنل مدرس شوید.");
+    return;
+  }
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/courses",
+      {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify({
+          title: title,
+          description: description,
+          created_by: teacherUserId
+        })
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    document.getElementById("courseTitle").value = "";
+    document.getElementById("courseDescription").value = "";
+
+    showMessage("courseMessage", "درس با موفقیت ثبت شد.");
+
+  } catch (error) {
+    showMessage("courseMessage", "خطا در ثبت درس: " + error.message);
+  }
+} 
+  async function loadTeacherCourses() {
+  const teacherToken = sessionStorage.getItem("teacherToken");
+  if (!teacherToken) return;
+
+  const box = document.getElementById("teacherCourses");
+  const select = document.getElementById("teacherCourseSelect");
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/courses?select=id,title,description&order=created_at.desc",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const courses = await response.json();
+    box.innerHTML = "";
+    select.innerHTML = '<option value="">انتخاب درس</option>';
+
+    if (courses.length === 0) {
+      box.textContent = "هنوز درسی ثبت نشده است.";
+      return;
+    }
+
+    courses.forEach(course => {
+      const item = document.createElement("div");
+      item.className = "card";
+      item.textContent = course.title + " - " + (course.description || "");
+      box.appendChild(item);
+
+      const option = document.createElement("option");
+      option.value = course.id;
+      option.textContent = course.title;
+      select.appendChild(option);
+    });
+
+  } catch (error) {
+    box.textContent = "خطا در دریافت درس‌ها: " + error.message;
+  }
+}
 const recoveryToken = recoveryParams.get("access_token");
 const isRecovery = recoveryParams.get("type") === "recovery" && recoveryToken;
 
