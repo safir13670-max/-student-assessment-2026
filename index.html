@@ -116,7 +116,51 @@ function api(path, method="GET", body=null) {
 function showMessage(id, text) {
   document.getElementById(id).textContent = text;
 }
+async function saveNewTeacherPassword() {
+  const password = document.getElementById("newTeacherPassword").value;
+  const confirm = document.getElementById("confirmTeacherPassword").value;
 
+  if (password.length < 8) {
+    showMessage("resetMessage", "رمز باید حداقل ۸ کاراکتر باشد.");
+    return;
+  }
+
+  if (password !== confirm) {
+    showMessage("resetMessage", "دو رمز یکسان نیستند.");
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.hash.substring(1));
+  const recoveryToken = params.get("access_token");
+
+  if (params.get("type") !== "recovery" || !recoveryToken) {
+    showMessage("resetMessage", "لینک بازیابی معتبر نیست.");
+    return;
+  }
+
+  try {
+    const response = await fetch(SUPABASE_URL + "/auth/v1/user", {
+      method: "PUT",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + recoveryToken,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "تغییر رمز انجام نشد.");
+    }
+
+    showMessage("resetMessage", "رمز جدید با موفقیت ذخیره شد.");
+    history.replaceState(null, "", window.location.pathname);
+  } catch (error) {
+    showMessage("resetMessage", error.message);
+  }
+}
 async function loginTeacher() {
   const email = document.getElementById("teacherEmail").value.trim();
   const password = document.getElementById("teacherPassword").value;
@@ -387,8 +431,15 @@ function logout() {
   currentCode = "";
   location.reload();
 }
+const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
+const recoveryToken = recoveryParams.get("access_token");
+const isRecovery = recoveryParams.get("type") === "recovery" && recoveryToken;
 
-if (token && userId) {
+if (isRecovery) {
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("dashboard").classList.add("hidden");
+  document.getElementById("resetPassword").classList.remove("hidden");
+} else if (token && userId) {
   openDashboard().catch(error => {
     logout();
   });
