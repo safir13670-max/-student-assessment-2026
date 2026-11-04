@@ -31,14 +31,24 @@ h2{color:#174a7c}
 
 <main>
 <section id="login" class="card">
-<h2>ورود دانشجو</h2>
-<p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
-<input id="code" placeholder="کد دانشجویی" autocomplete="username">
-<input id="password" type="password" placeholder="رمز عبور" autocomplete="current-password">
-<button id="loginBtn" onclick="login()">ورود به سامانه</button>
-<div id="message"></div>
-</section>
 
+<section id="login" class="card">
+  <h2>ورود دانشجو</h2>
+  <p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
+  <input id="code" placeholder="کد دانشجویی">
+  <input id="password" type="password" placeholder="رمز عبور">
+  <button id="loginBtn" onclick="login()">ورود دانشجو</button>
+  <div id="message"></div>
+
+  <hr>
+
+  <h2>ورود مدرس</h2>
+  <p class="muted">ایمیل و رمز عبور حساب مدرس را وارد کنید.</p>
+  <input id="teacherEmail" type="email" placeholder="ایمیل مدرس">
+  <input id="teacherPassword" type="password" placeholder="رمز عبور مدرس">
+  <button id="teacherBtn" onclick="loginTeacher()">ورود مدرس</button>
+  <div id="teacherMessage"></div>
+</section>
 <section id="dashboard" class="hidden">
 <div class="card">
 <h2>خوش آمدید</h2>
