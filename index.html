@@ -1,312 +1,48 @@
 
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>سنجش عملکردی دانشجویان</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial;background:#f2f5fa;color:#243047}
-header{background:#173b68;color:white;padding:22px;text-align:center}
-main{max-width:900px;margin:28px auto;padding:15px}
-.card{background:white;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 3px 14px #0000000d}
-input,button,textarea{font:inherit;width:100%;padding:13px;margin:8px 0;border-radius:8px}
-input,textarea{border:1px solid #ccd5e1}
-button{border:0;background:#1764a5;color:white;cursor:pointer}
-button:hover{background:#104b80}
-.secondary{background:#536579}
-.hidden{display:none}
-.muted{color:#68778b;font-size:14px}
-.item{border:1px solid #e0e6ee;border-radius:10px;padding:14px;margin:10px 0}
-h2{color:#174a7c}
-#message{padding:12px;border-radius:8px;margin-top:10px}
-</style>
-</head>
-<body>
-<header>
-<h1>سامانه سنجش عملکردی دانشجویان</h1>
-<p>پنل آموزشی و ارزیابی دانشجو</p>
-</header>
-
-<main>
-<section id="login" class="card">
-<h2>ورود دانشجو</h2>
-<p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
-<input id="code" placeholder="کد دانشجویی" autocomplete="username">
-<input id="password" type="password" placeholder="رمز عبور" autocomplete="current-password">
-<button id="loginBtn" onclick="login()">ورود به سامانه</button>
-<div id="message"></div>
-</section>
-
-<section id="dashboard" class="hidden">
-<div class="card">
-<h2>خوش آمدید</h2>
-<p id="studentName">دانشجو</p>
-<p class="muted" id="studentCode"></p>
-<button class="secondary" onclick="logout()">خروج از حساب</button>
-</div>
-
-<div class="card">
-<h2>درس‌های من</h2>
-<div id="courses">در حال دریافت اطلاعات...</div>
-</div>
-
-<div class="card">
-<h2>تکالیف من</h2>
-<div id="assignments">در حال دریافت اطلاعات...</div>
-</div>
-
-<div class="card">
-<h2>ارسال پاسخ تکلیف</h2>
-<select id="assignmentSelect" style="width:100%;padding:12px;border:1px solid #ccd5e1;border-radius:8px">
-<option value="">انتخاب تکلیف</option>
-</select>
-<textarea id="answer" rows="5" placeholder="پاسخ خود را بنویسید..."></textarea>
-<button onclick="submitAnswer()">ارسال پاسخ</button>
-<div id="submitMessage"></div>
-</div>
-
-<div class="card">
-<h2>سوابق ارسال و بازخورد</h2>
-<div id="history">در حال دریافت اطلاعات...</div>
-</div>
-</section>
-</main>
-
-<script>
-const SUPABASE_URL = "https://pgytmizdaldrcnfpksty.supabase.co";
-const SUPABASE_KEY = "sb_publishable_YVxKtYaPx8FppNQw7js9eg_6TCpOTrF";
-const LOGIN_URL = SUPABASE_URL + "/functions/v1/student-code-login";
-
-let token = sessionStorage.getItem("studentToken") || "";
-let userId = sessionStorage.getItem("studentUserId") || "";
-let currentCode = sessionStorage.getItem("studentCode") || "";
-let currentAssignments = [];
-
-function api(path, method="GET", body=null) {
-  return fetch(SUPABASE_URL + "/rest/v1/" + path, {
-    method,
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": "Bearer " + token,
-      "Content-Type": "application/json",
-      "Prefer": "return=representation"
-    },
-    body: body ? JSON.stringify(body) : null
-  });
-}
-
-function showMessage(id, text) {
-  document.getElementById(id).textContent = text;
-}
-
-async function login() {
-  const code = document.getElementById("code").value.trim();
-  const password = document.getElementById("password").value;
-  if (!code || !password) {
-    showMessage("message", "کد دانشجویی و رمز عبور را وارد کنید.");
-    return;
-  }
-
-  const btn = document.getElementById("loginBtn");
-  btn.disabled = true;
-  showMessage("message", "در حال بررسی اطلاعات...");
-
-  try {
-    const response = await fetch(LOGIN_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "apikey": SUPABASE_KEY
-      },
-      body: JSON.stringify({code, password})
-    });
-
-    const data = await response.json();
-    if (!response.ok || !data.access_token) {
-      throw new Error(data.error || data.message || "اطلاعات ورود صحیح نیست.");
-    }
-
-    token = data.access_token;
-    userId = data.user?.id || "";
-    currentCode = code;
-
-    sessionStorage.setItem("studentToken", token);
-    sessionStorage.setItem("studentUserId", userId);
-    sessionStorage.setItem("studentCode", currentCode);
-
-    await openDashboard();
-  } catch (error) {
-    showMessage("message", error.message || "خطا در ورود به سامانه");
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-async function openDashboard() {
-  if (!token || !userId) {
-    throw new Error("اطلاعات نشست کامل نیست؛ دوباره وارد شوید.");
-  }
-
-  document.getElementById("login").classList.add("hidden");
-  document.getElementById("dashboard").classList.remove("hidden");
-  document.getElementById("studentCode").textContent = "کد دانشجویی: " + currentCode;
-
-  await loadData();
-}
-
-async function loadData() {
-  const profileRes = await api(
-    "profiles?select=full_name,student_code&user_id=eq." + encodeURIComponent(userId)
-  );
-
-  if (!profileRes.ok) throw new Error("دریافت اطلاعات دانشجو ممکن نشد.");
-  const profiles = await profileRes.json();
-
-  if (profiles.length) {
-    document.getElementById("studentName").textContent =
-      "نام دانشجو: " + (profiles[0].full_name || "دانشجو");
-  }
-
-  const enrollRes = await api(
-    "enrollments?select=course_id&student_id=eq." + encodeURIComponent(userId)
-  );
-
-  if (!enrollRes.ok) {
-    document.getElementById("courses").textContent = "دریافت درس‌ها با خطا روبه‌رو شد.";
-    document.getElementById("assignments").textContent = "امکان دریافت تکالیف وجود ندارد.";
-    return;
-  }
-
-  const enrollments = await enrollRes.json();
-  const courseIds = [...new Set(enrollments.map(x => x.course_id).filter(Boolean))];
-
-  if (!courseIds.length) {
-    document.getElementById("courses").textContent = "هنوز درسی برای شما ثبت نشده است.";
-    document.getElementById("assignments").textContent = "فعلاً تکلیفی ثبت نشده است.";
-    document.getElementById("history").textContent = "هنوز سابقه‌ای ثبت نشده است.";
-    return;
-  }
-
-  const ids = "(" + courseIds.join(",") + ")";
-  const courseRes = await api(
-    "courses?select=id,title,description&id=in." + encodeURIComponent(ids)
-  );
-
-  if (!courseRes.ok) throw new Error("دریافت فهرست درس‌ها ممکن نشد.");
-  const courses = await courseRes.json();
-
-  document.getElementById("courses").innerHTML = courses.length
-    ? courses.map(c => `<div class="item"><b>${escapeHTML(c.title)}</b><p>${escapeHTML(c.description || "")}</p></div>`).join("")
-    : "درسی برای نمایش وجود ندارد.";
-
-  const assignmentRes = await api(
-    "assignments?select=id,title,instructions,due_at,course_id&course_id=in." +
-    encodeURIComponent(ids)
-  );
-
-  if (!assignmentRes.ok) {
-    document.getElementById("assignments").textContent = "دریافت تکالیف با خطا روبه‌رو شد.";
-    return;
-  }
-
-  currentAssignments = await assignmentRes.json();
-
-  document.getElementById("assignments").innerHTML = currentAssignments.length
-    ? currentAssignments.map(a =>
-      `<div class="item"><b>${escapeHTML(a.title)}</b>
-      <p>${escapeHTML(a.instructions || "بدون توضیحات")}</p>
-      <p class="muted">مهلت: ${a.due_at ? escapeHTML(new Date(a.due_at).toLocaleDateString("fa-IR")) : "تعیین نشده"}</p></div>`
-    ).join("")
-    : "هنوز تکلیفی برای درس‌های شما ثبت نشده است.";
-
-  const select = document.getElementById("assignmentSelect");
-  select.innerHTML = '<option value="">انتخاب تکلیف</option>';
-  currentAssignments.forEach(a => {
-    const option = document.createElement("option");
-    option.value = a.id;
-    option.textContent = a.title;
-    select.appendChild(option);
-  });
-
-  await loadHistory();
-}
-
 async function submitAnswer() {
   const assignmentId = document.getElementById("assignmentSelect").value;
   const answer = document.getElementById("answer").value.trim();
+  const message = document.getElementById("submitMessage");
 
   if (!assignmentId || !answer) {
-    showMessage("submitMessage", "تکلیف و متن پاسخ را وارد کنید.");
+    showMessage("submitMessage", "ابتدا تکلیف و متن پاسخ را وارد کنید.");
     return;
   }
 
-  const response = await api("submissions", "POST", {
-    assignment_id: assignmentId,
-    student_id: userId,
-    answer_text: answer,
-    status: "submitted"
-  });
-
-  if (!response.ok) {
-    showMessage("submitMessage", "ارسال پاسخ انجام نشد. ممکن است دسترسی ثبت پاسخ نیاز به تنظیم داشته باشد.");
-    return;
-  }
-
-  document.getElementById("answer").value = "";
-  showMessage("submitMessage", "پاسخ شما با موفقیت ثبت شد.");
-  await loadHistory();
-}
-
-async function loadHistory() {
-  const response = await api(
-    "submissions?select=id,assignment_id,answer_text,submitted_at,status&student_id=eq." +
-    encodeURIComponent(userId) + "&order=submitted_at.desc"
+  const btn = document.querySelector(
+    '#assignmentSelect + textarea + button'
   );
 
-  if (!response.ok) {
-    document.getElementById("history").textContent = "دریافت سوابق ممکن نشد.";
-    return;
+  btn.disabled = true;
+  btn.textContent = "در حال ارسال...";
+  showMessage("submitMessage", "در حال ثبت پاسخ شما...");
+
+  try {
+    const response = await api("submissions", "POST", {
+      assignment_id: assignmentId,
+      student_id: userId,
+      answer_text: answer,
+      status: "submitted"
+    });
+
+    const result = await response.text();
+
+    if (!response.ok) {
+      throw new Error(result || "خطا در ثبت پاسخ");
+    }
+
+    document.getElementById("answer").value = "";
+    showMessage("submitMessage", "پاسخ شما با موفقیت ثبت شد.");
+
+    await loadHistory();
+
+  } catch (error) {
+    showMessage("submitMessage", "خطا در ارسال: " + error.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "ارسال پاسخ";
   }
-
-  const submissions = await response.json();
-
-  if (!submissions.length) {
-    document.getElementById("history").textContent = "هنوز پاسخی ارسال نکرده‌اید.";
-    return;
-  }
-
-  document.getElementById("history").innerHTML = submissions.map(s => {
-    const assignment = currentAssignments.find(a => a.id === s.assignment_id);
-    return `<div class="item"><b>${escapeHTML(assignment?.title || "تکلیف")}</b>
-      <p>${escapeHTML(s.answer_text || "")}</p>
-      <p class="muted">وضعیت: ${escapeHTML(s.status || "ثبت‌شده")}</p></div>`;
-  }).join("");
 }
 
-function escapeHTML(value) {
-  return String(value).replace(/[&<>"']/g, c => ({
-    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
-  }[c]));
-}
 
-function logout() {
-  sessionStorage.removeItem("studentToken");
-  sessionStorage.removeItem("studentUserId");
-  sessionStorage.removeItem("studentCode");
-  token = "";
-  userId = "";
-  currentCode = "";
-  location.reload();
-}
-
-if (token && userId) {
-  openDashboard().catch(error => {
-    logout();
-  });
-}
-</script>
-</body>
-</html>
 
