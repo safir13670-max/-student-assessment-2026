@@ -266,6 +266,7 @@ async function loginTeacher() {
 document.getElementById("login").classList.add("hidden");
 document.getElementById("dashboard").classList.add("hidden");
 document.getElementById("teacherDashboard").classList.remove("hidden");
+    await loadTeacherCourses();
   } catch (error) {
     showMessage("teacherMessage", error.message || "خطا در ورود مدرس.");
   } finally {
@@ -524,7 +525,7 @@ const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
 
     document.getElementById("courseTitle").value = "";
     document.getElementById("courseDescription").value = "";
-
+await loadTeacherCourses();
     showMessage("courseMessage", "درس با موفقیت ثبت شد.");
 
   } catch (error) {
