@@ -1,0 +1,62 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>سنجش عملکردی دانشجویان</title>
+<style>
+body{font-family:tahoma;background:#eef2f7;margin:0;color:#183047}
+header{background:#164e63;color:white;text-align:center;padding:25px}
+main{max-width:650px;margin:30px auto;padding:15px}
+.card{background:white;padding:25px;border-radius:14px;margin:15px 0}
+input{box-sizing:border-box;width:100%;padding:13px;margin:10px 0;border:1px solid #ccc;border-radius:8px}
+button{background:#087e8b;color:white;border:0;padding:13px 25px;border-radius:8px;width:100%}
+#message{line-height:2}
+</style>
+</head>
+<body>
+<header>
+<h2>سامانه سنجش عملکردی دانشجویان</h2>
+<p>ارزیابی و پیگیری پیشرفت تحصیلی</p>
+</header>
+<main>
+<div class="card">
+<h3>ورود دانشجو</h3>
+<input id="code" placeholder="کد دانشجویی">
+<input id="password" type="password" placeholder="رمز عبور">
+<button id="login">ورود به سامانه</button>
+<p id="message"></p>
+</div>
+</main>
+<script>
+document.getElementById("login").onclick=async()=>{
+ const code=document.getElementById("code").value.trim();
+ const password=document.getElementById("password").value;
+ const msg=document.getElementById("message");
+ const btn=document.getElementById("login");
+ if(!code||!password){msg.textContent="کد و رمز را وارد کنید.";return;}
+ btn.disabled=true;
+ msg.textContent="در حال بررسی اطلاعات...";
+ try{
+  const response=await fetch(
+   "https://pgytmizdaldrcnfpksty.supabase.co/functions/v1/student-code-login",
+   {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({code,password})
+   }
+  );
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error||"ورود ناموفق بود.");
+  sessionStorage.setItem("student_access_token",data.access_token);
+  msg.textContent="ورود موفق بود. حساب دانشجویی شما شناسایی شد.";
+ }catch(error){
+  msg.textContent=error.message||"ارتباط با سامانه برقرار نشد.";
+ }finally{
+  btn.disabled=false;
+ }
+};
+</script>
+</body>
+</html>
