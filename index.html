@@ -262,7 +262,10 @@ async function loginTeacher() {
     showMessage("teacherMessage", "ورود موفق بود؛ در حال آماده‌سازی پنل مدرس...");
 
     // فعلاً ورود تأیید می‌شود؛ پنل مدرس را در مرحله بعد اضافه می‌کنیم.
-    showMessage("teacherMessage", "ورود مدرس تأیید شد.");
+  showMessage("teacherMessage", "ورود مدرس تأیید شد.");
+document.getElementById("login").classList.add("hidden");
+document.getElementById("dashboard").classList.add("hidden");
+document.getElementById("teacherDashboard").classList.remove("hidden");
   } catch (error) {
     showMessage("teacherMessage", error.message || "خطا در ورود مدرس.");
   } finally {
@@ -470,6 +473,15 @@ function logout() {
   location.reload();
 }
 const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
+  function teacherLogout() {
+  sessionStorage.removeItem("teacherToken");
+  sessionStorage.removeItem("teacherUserId");
+  sessionStorage.removeItem("appRole");
+  document.getElementById("teacherDashboard").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+
+  showMessage("teacherMessage", "از پنل مدرس خارج شدید.");
+}
 const recoveryToken = recoveryParams.get("access_token");
 const isRecovery = recoveryParams.get("type") === "recovery" && recoveryToken;
 
