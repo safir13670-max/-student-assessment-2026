@@ -30,8 +30,14 @@ h2{color:#174a7c}
 </header>
 
 <main>
-<section id="login" class="card">
-
+  <section id="resetPassword" class="card hidden">
+  <h2>تعیین رمز جدید مدرس</h2>
+  <p>رمز عبور جدید خود را وارد کنید.</p>
+  <input id="newTeacherPassword" type="password" placeholder="رمز جدید">
+  <input id="confirmTeacherPassword" type="password" placeholder="تکرار رمز جدید">
+  <button onclick="saveNewTeacherPassword()">ذخیره رمز جدید</button>
+  <div id="resetMessage"></div>
+</section>
 <section id="login" class="card">
   <h2>ورود دانشجو</h2>
   <p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
