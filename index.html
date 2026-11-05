@@ -5,23 +5,316 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>سنجش عملکردی دانشجویان</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Tahoma,Arial;background:#f2f5fa;color:#243047}
-header{background:#173b68;color:white;padding:22px;text-align:center}
-main{max-width:900px;margin:28px auto;padding:15px}
-.card{background:white;border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 3px 14px #0000000d}
-input,button,textarea{font:inherit;width:100%;padding:13px;margin:8px 0;border-radius:8px}
-input,textarea{border:1px solid #ccd5e1}
-button{border:0;background:#1764a5;color:white;cursor:pointer}
-button:hover{background:#104b80}
-.secondary{background:#536579}
-.hidden{display:none}
-.muted{color:#68778b;font-size:14px}
-.item{border:1px solid #e0e6ee;border-radius:10px;padding:14px;margin:10px 0}
-h2{color:#174a7c}
-#message{padding:12px;border-radius:8px;margin-top:10px}
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --primary: #1764a5;
+  --primary-dark: #123e68;
+  --secondary: #e8f2fc;
+  --background: #f3f7fc;
+  --text: #26384d;
+  --muted: #718096;
+  --border: #dce6f1;
+}
+
+body {
+  margin: 0;
+  font-family: Tahoma, Arial, sans-serif;
+  background: linear-gradient(135deg, #f3f7fc, #e8f1fb);
+  color: var(--text);
+  line-height: 1.8;
+}
+
+header {
+  background: linear-gradient(120deg, #123e68, #2184c7);
+  color: white;
+  padding: 32px 18px;
+  text-align: center;
+  box-shadow: 0 5px 20px #123e6828;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 27px;
+}
+
+header p {
+  margin: 8px 0 0;
+  color: #e5f2ff;
+}
+
+main {
+  max-width: 1000px;
+  margin: 32px auto;
+  padding: 16px;
+}
+
+.card {
+  background: white;
+  border: 1px solid #e8eef6;
+  border-radius: 18px;
+  padding: 25px;
+  margin-bottom: 22px;
+  box-shadow: 0 8px 28px #173b6810;
+  transition: box-shadow .2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 32px #173b6818;
+}
+
+h2 {
+  color: var(--primary-dark);
+  font-size: 21px;
+  border-right: 4px solid #2788ce;
+  padding-right: 12px;
+}
+
+h3 {
+  color: var(--primary-dark);
+}
+
+input, textarea, button {
+  font: inherit;
+  width: 100%;
+  padding: 13px 15px;
+  margin: 8px 0;
+  border-radius: 10px;
+}
+
+input, textarea {
+  border: 1px solid var(--border);
+  background: #fbfdff;
+  color: var(--text);
+  outline: none;
+  transition: border .2s, box-shadow .2s;
+}
+
+input:focus, textarea:focus {
+  border-color: #2788ce;
+  box-shadow: 0 0 0 3px #2788ce20;
+}
+
+textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+button {
+  border: none;
+  background: linear-gradient(120deg, #1764a5, #2586c9);
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 10px #1764a526;
+  transition: transform .2s, filter .2s;
+}
+
+button:hover {
+  filter: brightness(.92);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.secondary {
+  background: #64778d;
+  box-shadow: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.item {
+  background: #fbfdff;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  padding: 17px;
+  margin: 13px 0;
+}
+
+#message {
+  padding: 12px;
+  border-radius: 9px;
+  margin-top: 10px;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 22px 0;
+}
+
+@media (max-width: 600px) {
+  header {
+    padding: 24px 12px;
+  }
+
+  header h1 {
+    font-size: 21px;
+  }
+
+  main {
+    margin: 14px auto;
+    padding: 10px;
+  }
+
+  .card {
+    padding: 17px;
+    border-radius: 14px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+}
+  
+/* طراحی کارت‌های درس و تکلیف */
+.item {
+  position: relative;
+  overflow: hidden;
+  border-right: 4px solid #2788ce;
+  background: linear-gradient(135deg, #ffffff, #f5faff);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 20px #1764a51a;
+}
+
+.item h3 {
+  margin-top: 0;
+  font-size: 17px;
+}
+
+/* دکمه‌های داخل کارت‌ها */
+.item button {
+  width: auto;
+  min-width: 120px;
+  padding: 10px 16px;
+  margin: 5px 4px;
+}
+
+/* ظاهر بخش‌های ورود */
+#loginSection,
+#resetPassword {
+  max-width: 560px;
+  margin: 35px auto;
+}
+
+/* پیام‌های سامانه */
+#message,
+#resetMessage {
+  background: #eef6ff;
+  color: #174a7c;
+  border: 1px solid #d4e7f8;
+}
+
+/* نمودار پیشرفت */
+#history {
+  overflow-x: auto;
+}
+
+/* نمایش بهتر در موبایل */
+@media (max-width: 600px) {
+  .item button {
+    width: 100%;
+    margin: 5px 0;
+  }
+}
+
+/* کارت‌های معرفی امکانات پنل مدرس */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin: 20px 0;
+}
+
+.stat-card {
+  background: linear-gradient(145deg, #ffffff, #eaf4ff);
+  border: 1px solid #d9e9f8;
+  border-radius: 16px;
+  padding: 20px 14px;
+  text-align: center;
+  box-shadow: 0 5px 16px #1764a512;
+  transition: .2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px #1764a525;
+}
+
+.stat-icon {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+.stat-card h3 {
+  color: #174a7c;
+  font-size: 16px;
+  margin: 5px 0;
+}
+
+.stat-card p {
+  color: #718096;
+  font-size: 12px;
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* بهبود ظاهر فرم‌های مدیریت */
+#teacherDashboard input,
+#teacherDashboard textarea,
+#teacherDashboard select {
+  background: #f8fbff;
+  border: 1px solid #d5e3f1;
+  border-radius: 10px;
+}
+
+/* کارت‌های داخل پنل مدرس */
+#teacherDashboard .card {
+  border-top: 3px solid #2788ce;
+}
+
+/* دکمه‌های مدیریت */
+#teacherDashboard button {
+  border-radius: 10px;
+  min-height: 43px;
+}
+
+/* جداکننده بخش‌ها */
+#teacherDashboard hr {
+  border-top: 1px dashed #cbd9e8;
+}
+.stat-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #1764a5;
+  margin: 5px 0;
+  direction: ltr;
+}
 </style>
+
 </head>
 <body>
 <header>
@@ -86,6 +379,28 @@ h2{color:#174a7c}
 </section>
 </main>
 <section id="teacherDashboard" class="hidden">
+
+<div class="stats-grid">
+ <div class="stat-card">
+    <div class="stat-icon">📚</div>
+    <h3>مدیریت درس‌ها</h3>
+    <div id="courseCount" class="stat-number">۰</div>
+    <p>تعداد درس‌های ثبت‌شده</p>
+</div>
+
+ <div class="stat-card">
+  <div class="stat-icon">📝</div>
+  <h3>مدیریت تکالیف</h3>
+  <div id="assignmentCount" class="stat-number">۰</div>
+  <p>تعداد تکالیف ثبت‌شده</p>
+</div>
+
+  <div class="stat-card">
+    <div class="stat-icon">🎓</div>
+    <h3>ارزیابی دانشجویان</h3>
+    <p>بررسی پاسخ و ثبت نمره</p>
+  </div>
+</div>
 
   <div class="card">
     <h2>پنل مدیریت مدرس</h2>
@@ -263,6 +578,7 @@ if (studentBox) studentBox.classList.add("hidden");
 if (teacherBox) teacherBox.classList.remove("hidden");
     await loadTeacherCourses();
     await loadTeacherSubmissions();
+    await loadAssignmentCount();
   } catch (error) {
     showMessage("teacherMessage", error.message || "خطا در ورود مدرس.");
   } finally {
@@ -662,6 +978,10 @@ await loadTeacherCourses();
     if (!response.ok) throw new Error(await response.text());
 
     const courses = await response.json();
+    const courseCount = document.getElementById("courseCount");
+if (courseCount) {
+  courseCount.textContent = courses.length;
+}
     box.innerHTML = "";
     select.innerHTML = '<option value="">انتخاب درس</option>';
 
@@ -1083,11 +1403,38 @@ window.saveFeedback = saveFeedback;
     document.getElementById("assignmentDue").value = "";
 
     showMessage("assignmentMessage", "تکلیف با موفقیت ثبت شد.");
-
+await loadAssignmentCount();
   } catch (error) {
     showMessage("assignmentMessage", "خطا در ثبت تکلیف: " + error.message);
   }
 }
+ async function loadAssignmentCount() {
+  const teacherToken = sessionStorage.getItem("teacherToken");
+  const countBox = document.getElementById("assignmentCount");
+
+  if (!teacherToken || !countBox) return;
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/assignments?select=id",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!response.ok) throw new Error(await response.text());
+
+    const assignments = await response.json();
+    countBox.textContent = assignments.length;
+  } catch (error) {
+    console.error("خطا در شمارش تکالیف:", error);
+  }
+}
+
+window.loadAssignmentCount = loadAssignmentCount; 
 const recoveryToken = recoveryParams.get("access_token");
 const isRecovery = recoveryParams.get("type") === "recovery" && recoveryToken;
 
