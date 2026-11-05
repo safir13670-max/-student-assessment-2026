@@ -511,6 +511,46 @@ async function loadHistory() {
       </button>
     </div>`;
   }).join("");
+  const chartBox = document.getElementById("history");
+
+const graded = submissions
+  .map(s => {
+    const f = feedbackRows.find(x => x.submission_id === s.id);
+    const assignment = currentAssignments.find(a => a.id === s.assignment_id);
+
+    if (!f || f.score === null) return null;
+
+    return {
+      title: assignment?.title || "تکلیف",
+      score: Number(f.score)
+    };
+  })
+  .filter(Boolean);
+
+const chartHTML = graded.length
+  ? `
+    <div class="item">
+      <h3>نمودار پیشرفت تحصیلی</h3>
+      <div style="display:flex;align-items:flex-end;gap:12px;height:190px;overflow-x:auto;padding:12px;">
+        ${graded.map(item => `
+          <div style="min-width:55px;text-align:center;">
+            <b>${item.score}</b>
+            <div style="height:${Math.max(item.score * 6, 4)}px;background:#2878c8;border-radius:6px 6px 0 0;"></div>
+            <small>${escapeHTML(item.title)}</small>
+          </div>
+        `).join("")}
+      </div>
+      <p class="muted">هر ستون نشان‌دهنده نمره یک تکلیف از ۲۰ است.</p>
+    </div>
+  `
+  : `
+    <div class="item">
+      <h3>نمودار پیشرفت تحصیلی</h3>
+      <p>هنوز نمره‌ای برای نمایش در نمودار ثبت نشده است.</p>
+    </div>
+  `;
+
+chartBox.insertAdjacentHTML("afterbegin", chartHTML);
 }
 
 function editSubmission(id) {
