@@ -318,7 +318,7 @@ async function openDashboard() {
     throw new Error("اطلاعات نشست کامل نیست؛ دوباره وارد شوید.");
   }
 
-  document.getElementById("login").classList.add("hidden");
+  document.getElementById("loginSection").classList.add("hidden");
   document.getElementById("dashboard").classList.remove("hidden");
   document.getElementById("studentCode").textContent = "کد دانشجویی: " + currentCode;
 
@@ -514,7 +514,7 @@ const recoveryParams = new URLSearchParams(window.location.hash.substring(1));
   sessionStorage.removeItem("teacherUserId");
   sessionStorage.removeItem("appRole");
   document.getElementById("teacherDashboard").classList.add("hidden");
-  document.getElementById("login").classList.remove("hidden");
+document.getElementById("loginSection").classList.remove("hidden");
 
   showMessage("teacherMessage", "از پنل مدرس خارج شدید.");
 }
@@ -711,7 +711,7 @@ const recoveryToken = recoveryParams.get("access_token");
 const isRecovery = recoveryParams.get("type") === "recovery" && recoveryToken;
 
 if (isRecovery) {
-  document.getElementById("login").classList.add("hidden");
+document.getElementById("loginSection").classList.add("hidden");
   document.getElementById("dashboard").classList.add("hidden");
   document.getElementById("resetPassword").classList.remove("hidden");
 } else if (token && userId) {
