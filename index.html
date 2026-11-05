@@ -261,8 +261,6 @@ const teacherBox = document.getElementById("teacherDashboard");
 if (loginBox) loginBox.classList.add("hidden");
 if (studentBox) studentBox.classList.add("hidden");
 if (teacherBox) teacherBox.classList.remove("hidden");
-await loadTeacherCourses();
-await loadTeacherSubmissions();
     await loadTeacherCourses();
     await loadTeacherSubmissions();
   } catch (error) {
