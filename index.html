@@ -445,7 +445,6 @@ let currentSubmissions = [];
   showMessage("submitMessage", "پاسخ با موفقیت ثبت شد.");
   await loadHistory();
 }
-
 async function loadHistory() {
   const response = await api(
     "submissions?select=id,assignment_id,answer_text,submitted_at,status&student_id=eq." +
@@ -463,21 +462,57 @@ async function loadHistory() {
     document.getElementById("history").textContent = "هنوز پاسخی ارسال نکرده‌اید.";
     return;
   }
+
   currentSubmissions = submissions;
 
-document.getElementById("history").innerHTML = submissions.map(s => {
-  const assignment = currentAssignments.find(a => a.id === s.assignment_id);
+  const submissionIds = submissions.map(s => s.id);
 
-  return `<div class="item">
-    <b>${escapeHTML(assignment?.title || "تکلیف")}</b>
-    <p>${escapeHTML(s.answer_text || "")}</p>
-    <p class="muted">وضعیت: ${escapeHTML(s.status || "ثبت‌شده")}</p>
-    <button type="button" onclick="editSubmission('${s.id}')">
-      ویرایش پاسخ
-    </button>
-  </div>`;
-}).join("");
+  const feedbackResponse = await api(
+    "feedback?select=submission_id,score,comments&submission_id=in.(" +
+    submissionIds.join(",") + ")"
+  );
+
+  let feedbackRows = [];
+
+  if (feedbackResponse.ok) {
+    feedbackRows = await feedbackResponse.json();
+  }
+
+  document.getElementById("history").innerHTML = submissions.map(s => {
+    const assignment = currentAssignments.find(a => a.id === s.assignment_id);
+
+    const feedback = feedbackRows.find(
+      f => f.submission_id === s.id
+    );
+
+    return `<div class="item">
+      <b>${escapeHTML(assignment?.title || "تکلیف")}</b>
+
+      <p>${escapeHTML(s.answer_text || "")}</p>
+
+      <p class="muted">
+        وضعیت: ${escapeHTML(s.status || "ثبت‌شده")}
+      </p>
+
+      ${
+        feedback
+          ? `
+            <hr>
+            <h3>نتیجه ارزیابی مدرس</h3>
+            <p><b>نمره:</b> ${escapeHTML(feedback.score)} از ۲۰</p>
+            <p><b>بازخورد مدرس:</b></p>
+            <p>${escapeHTML(feedback.comments || "بازخوردی ثبت نشده است.")}</p>
+          `
+          : `<p class="muted">هنوز نمره و بازخوردی ثبت نشده است.</p>`
+      }
+
+      <button type="button" onclick="editSubmission('${s.id}')">
+        ویرایش پاسخ
+      </button>
+    </div>`;
+  }).join("");
 }
+
 function editSubmission(id) {
   const submission = currentSubmissions.find(s => s.id === id);
 
