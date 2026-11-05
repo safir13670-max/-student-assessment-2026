@@ -394,12 +394,11 @@ hr {
   <div id="assignmentCount" class="stat-number">۰</div>
   <p>تعداد تکالیف ثبت‌شده</p>
 </div>
-
-  <div class="stat-card">
-    <div class="stat-icon">🎓</div>
-    <h3>ارزیابی دانشجویان</h3>
-    <p>بررسی پاسخ و ثبت نمره</p>
-  </div>
+<div class="stat-card">
+  <div class="stat-icon">🎓</div>
+  <h3>ارزیابی دانشجویان</h3>
+  <div id="responseCount" class="stat-number">۰</div>
+  <p>تعداد پاسخ‌های دریافتی</p>
 </div>
 
   <div class="card">
@@ -773,7 +772,11 @@ async function loadHistory() {
   }
 
   const submissions = await response.json();
+const responseCount = document.getElementById("responseCount");
 
+if (responseCount) {
+  responseCount.textContent = submissions.length;
+}
   if (!submissions.length) {
     document.getElementById("history").textContent = "هنوز پاسخی ارسال نکرده‌اید.";
     return;
