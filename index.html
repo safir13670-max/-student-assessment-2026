@@ -267,6 +267,7 @@ document.getElementById("loginSection").classList.add("hidden");
 document.getElementById("dashboard").classList.add("hidden");
 document.getElementById("teacherDashboard").classList.remove("hidden");
     await loadTeacherCourses();
+    await loadTeacherSubmissions();
   } catch (error) {
     showMessage("teacherMessage", error.message || "خطا در ورود مدرس.");
   } finally {
@@ -616,6 +617,47 @@ await loadTeacherCourses();
     box.textContent = "خطا در دریافت درس‌ها: " + error.message;
   }
 }
+ async function loadTeacherSubmissions() {
+  const box = document.getElementById("teacherSubmissions");
+  const teacherToken = sessionStorage.getItem("teacherToken");
+
+  box.textContent = "در حال دریافت پاسخ‌ها...";
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/submissions?select=id,student_id,assignment_id,answer_text,submitted_at,status&order=submitted_at.desc",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    const submissions = await response.json();
+
+    if (!submissions.length) {
+      box.textContent = "هنوز پاسخی ارسال نشده است.";
+      return;
+    }
+
+    box.innerHTML = submissions.map(s => `
+      <div class="item">
+        <b>شناسه دانشجو: ${escapeHTML(s.student_id)}</b>
+        <p>پاسخ دانشجو:</p>
+        <p>${escapeHTML(s.answer_text || "")}</p>
+        <p class="muted">تاریخ ارسال: ${escapeHTML(s.submitted_at || "")}</p>
+      </div>
+    `).join("");
+
+  } catch (error) {
+    box.textContent = "خطا در دریافت پاسخ‌ها: " + error.message;
+  }
+} 
   async function createAssignment() {
   const courseId = document.getElementById("teacherCourseSelect").value;
   const title = document.getElementById("assignmentTitle").value.trim();
