@@ -705,6 +705,96 @@ box.appendChild(item);
     box.textContent = "خطا در دریافت درس‌ها: " + error.message;
   }
 }
+ async function editCourse(courseId) {
+  const teacherToken = sessionStorage.getItem("teacherToken");
+
+  try {
+    const getResponse = await fetch(
+      SUPABASE_URL + "/rest/v1/courses?select=title,description&id=eq." + courseId,
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!getResponse.ok) throw new Error(await getResponse.text());
+
+    const courses = await getResponse.json();
+    if (!courses.length) {
+      alert("درس پیدا نشد.");
+      return;
+    }
+
+    const newTitle = prompt("عنوان جدید درس:", courses[0].title);
+    if (newTitle === null) return;
+
+    if (!newTitle.trim()) {
+      alert("عنوان درس نمی‌تواند خالی باشد.");
+      return;
+    }
+
+    const newDescription = prompt(
+      "توضیحات جدید درس:",
+      courses[0].description || ""
+    );
+    if (newDescription === null) return;
+
+    const updateResponse = await fetch(
+      SUPABASE_URL + "/rest/v1/courses?id=eq." + courseId,
+      {
+        method: "PATCH",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken,
+          "Content-Type": "application/json",
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({
+          title: newTitle.trim(),
+          description: newDescription.trim()
+        })
+      }
+    );
+
+    if (!updateResponse.ok) throw new Error(await updateResponse.text());
+
+    alert("درس با موفقیت ویرایش شد.");
+    await loadTeacherCourses();
+
+  } catch (error) {
+    alert("خطا در ویرایش درس: " + error.message);
+  }
+}
+
+async function deleteCourse(courseId) {
+  const teacherToken = sessionStorage.getItem("teacherToken");
+
+  if (!confirm("آیا از حذف این درس مطمئن هستید؟")) return;
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/courses?id=eq." + courseId,
+      {
+        method: "DELETE",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken,
+          "Prefer": "return=minimal"
+        }
+      }
+    );
+
+    if (!response.ok) throw new Error(await response.text());
+
+    alert("درس حذف شد.");
+    await loadTeacherCourses();
+
+  } catch (error) {
+    alert("خطا در حذف درس: ممکن است برای این درس تکلیف یا ثبت‌نام وجود داشته باشد.\n" + error.message);
+  }
+} 
  async function loadTeacherSubmissions() {
   const box = document.getElementById("teacherSubmissions");
   const teacherToken = sessionStorage.getItem("teacherToken");
