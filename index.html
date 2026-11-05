@@ -639,20 +639,103 @@ await loadTeacherCourses();
       box.textContent = "هنوز پاسخی ارسال نشده است.";
       return;
     }
+box.innerHTML = submissions.map(s => `
+  <div class="item">
+    <b>شناسه دانشجو: ${escapeHTML(s.student_id)}</b>
+    <p>پاسخ دانشجو:</p>
+    <p>${escapeHTML(s.answer_text || "")}</p>
+    <p class="muted">تاریخ ارسال: ${escapeHTML(s.submitted_at || "")}</p>
 
-    box.innerHTML = submissions.map(s => `
-      <div class="item">
-        <b>شناسه دانشجو: ${escapeHTML(s.student_id)}</b>
-        <p>پاسخ دانشجو:</p>
-        <p>${escapeHTML(s.answer_text || "")}</p>
-        <p class="muted">تاریخ ارسال: ${escapeHTML(s.submitted_at || "")}</p>
-      </div>
-    `).join("");
+    <button type="button"
+      onclick="evaluateAnswer('${s.id}')">
+      ارزیابی هوشمند پاسخ
+    </button>
 
+    <div id="evaluation-${s.id}"></div>
+  </div>
+`).join("");
   } catch (error) {
     box.textContent = "خطا در دریافت پاسخ‌ها: " + error.message;
   }
 } 
+  async function evaluateAnswer(submissionId) {
+  const box = document.getElementById("evaluation-" + submissionId);
+  const teacherToken = sessionStorage.getItem("teacherToken");
+
+  box.textContent = "در حال ارزیابی پاسخ...";
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/submissions?id=eq." +
+      encodeURIComponent(submissionId) +
+      "&select=id,answer_text,assignment_id",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!response.ok) throw new Error("دریافت پاسخ ناموفق بود.");
+
+    const data = await response.json();
+    if (!data.length) throw new Error("پاسخ پیدا نشد.");
+
+    const answer = (data[0].answer_text || "").trim();
+
+    const words = answer.split(/\s+/).filter(Boolean);
+    const length = answer.length;
+
+    let score = 0;
+    let feedback = [];
+
+    if (length < 20) {
+      score = 3;
+      feedback.push("پاسخ بسیار کوتاه است و نیاز به توضیح بیشتری دارد.");
+    } else if (length < 80) {
+      score = 8;
+      feedback.push("پاسخ اولیه است؛ جزئیات بیشتری اضافه کنید.");
+    } else if (length < 180) {
+      score = 13;
+      feedback.push("پاسخ از توضیحات مناسبی برخوردار است.");
+    } else {
+      score = 16;
+      feedback.push("پاسخ از نظر حجم توضیحات نسبتاً کامل است.");
+    }
+
+    if (words.length >= 30) {
+      score += 2;
+      feedback.push("توضیحات نسبتاً مفصل ارائه شده است.");
+    }
+
+    if (/[.!؟]/.test(answer)) {
+      score += 1;
+      feedback.push("از نشانه‌گذاری در متن استفاده شده است.");
+    }
+
+    score = Math.min(score, 20);
+
+    box.innerHTML = `
+      <div class="item">
+        <h3>نتیجه ارزیابی اولیه</h3>
+        <h2>نمره پیشنهادی: ${score} از ۲۰</h2>
+        <p><b>بازخورد:</b></p>
+        <ul>
+          ${feedback.map(x => `<li>${escapeHTML(x)}</li>`).join("")}
+        </ul>
+        <p class="muted">
+          این نمره صرفاً پیشنهادی و مبتنی بر معیارهای اولیه است.
+          مدرس باید صحت علمی پاسخ را بررسی و نمره نهایی را تأیید کند.
+        </p>
+      </div>
+    `;
+  } catch (error) {
+    box.textContent = "خطا در ارزیابی: " + error.message;
+  }
+}
+
+window.evaluateAnswer = evaluateAnswer;
   async function createAssignment() {
   const courseId = document.getElementById("teacherCourseSelect").value;
   const title = document.getElementById("assignmentTitle").value.trim();
