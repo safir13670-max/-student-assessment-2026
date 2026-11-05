@@ -771,13 +771,15 @@ async function loadHistory() {
     return;
   }
 
-  const submissions = await response.json();
+ const submissions = await response.json();
+
 const responseCount = document.getElementById("responseCount");
 
 if (responseCount) {
   responseCount.textContent = submissions.length;
 }
-  if (!submissions.length) {
+
+if (!submissions.length) {
     document.getElementById("history").textContent = "هنوز پاسخی ارسال نکرده‌اید.";
     return;
   }
