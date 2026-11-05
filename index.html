@@ -254,16 +254,15 @@ async function loginTeacher() {
     sessionStorage.setItem("teacherToken", teacherToken);
     sessionStorage.setItem("teacherUserId", teacherId);
     sessionStorage.setItem("appRole", role);
-
-    showMessage("teacherMessage", "ورود موفق بود؛ در حال آماده‌سازی پنل مدرس...");
-
-    // فعلاً ورود تأیید می‌شود؛ پنل مدرس را در مرحله بعد اضافه می‌کنیم.
-  showMessage("teacherMessage", "ورود مدرس تأیید شد.");
-console.log("loginSection:", document.getElementById("loginSection"));
-console.log("dashboard:", document.getElementById("dashboard"));
-console.log("teacherDashboard:", document.getElementById("teacherDashboard"));
-document.getElementById("dashboard").classList.add("hidden");
-document.getElementById("teacherDashboard").classList.remove("hidden");
+showMessage("teacherMessage", "ورود مدرس تأیید شد.");
+const loginBox = document.getElementById("loginSection");
+const studentBox = document.getElementById("dashboard");
+const teacherBox = document.getElementById("teacherDashboard");
+if (loginBox) loginBox.classList.add("hidden");
+if (studentBox) studentBox.classList.add("hidden");
+if (teacherBox) teacherBox.classList.remove("hidden");
+await loadTeacherCourses();
+await loadTeacherSubmissions();
     await loadTeacherCourses();
     await loadTeacherSubmissions();
   } catch (error) {
