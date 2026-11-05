@@ -38,16 +38,14 @@ h2{color:#174a7c}
   <button onclick="saveNewTeacherPassword()">ذخیره رمز جدید</button>
   <div id="resetMessage"></div>
 </section>
-<sectionid="loginSection" class="card">
+<section id="loginSection" class="card">
   <h2>ورود دانشجو</h2>
   <p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
   <input id="code" placeholder="کد دانشجویی">
   <input id="password" type="password" placeholder="رمز عبور">
   <button id="loginBtn" onclick="login()">ورود دانشجو</button>
   <div id="message"></div>
-
   <hr>
-
   <h2>ورود مدرس</h2>
   <p class="muted">ایمیل و رمز عبور حساب مدرس را وارد کنید.</p>
   <input id="teacherEmail" type="email" placeholder="ایمیل مدرس">
@@ -62,12 +60,10 @@ h2{color:#174a7c}
 <p class="muted" id="studentCode"></p>
 <button class="secondary" onclick="logout()">خروج از حساب</button>
 </div>
-
 <div class="card">
 <h2>درس‌های من</h2>
 <div id="courses">در حال دریافت اطلاعات...</div>
 </div>
-
 <div class="card">
 <h2>تکالیف من</h2>
 <div id="assignments">در حال دریافت اطلاعات...</div>
@@ -263,7 +259,9 @@ async function loginTeacher() {
 
     // فعلاً ورود تأیید می‌شود؛ پنل مدرس را در مرحله بعد اضافه می‌کنیم.
   showMessage("teacherMessage", "ورود مدرس تأیید شد.");
-document.getElementById("loginSection").classList.add("hidden");
+console.log("loginSection:", document.getElementById("loginSection"));
+console.log("dashboard:", document.getElementById("dashboard"));
+console.log("teacherDashboard:", document.getElementById("teacherDashboard"));
 document.getElementById("dashboard").classList.add("hidden");
 document.getElementById("teacherDashboard").classList.remove("hidden");
     await loadTeacherCourses();
