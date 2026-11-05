@@ -793,7 +793,7 @@ if (!feedbackResponse.ok) {
 }
 
 const feedbackRows = await feedbackResponse.json();
-
+ console.log("تعداد ارزیابی‌های دریافتی:", feedbackRows.length, feedbackRows); 
 const evaluationCount = document.getElementById("evaluationCount");
 
 if (evaluationCount) {
