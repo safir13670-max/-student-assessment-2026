@@ -38,7 +38,7 @@ h2{color:#174a7c}
   <button onclick="saveNewTeacherPassword()">ذخیره رمز جدید</button>
   <div id="resetMessage"></div>
 </section>
-<section id="login" class="card">
+<sectionid="loginSection" class="card">
   <h2>ورود دانشجو</h2>
   <p class="muted">کد دانشجویی و رمز عبور خود را وارد کنید.</p>
   <input id="code" placeholder="کد دانشجویی">
@@ -263,7 +263,7 @@ async function loginTeacher() {
 
     // فعلاً ورود تأیید می‌شود؛ پنل مدرس را در مرحله بعد اضافه می‌کنیم.
   showMessage("teacherMessage", "ورود مدرس تأیید شد.");
-document.getElementById("login").classList.add("hidden");
+document.getElementById("loginSection").classList.add("hidden");
 document.getElementById("dashboard").classList.add("hidden");
 document.getElementById("teacherDashboard").classList.remove("hidden");
     await loadTeacherCourses();
