@@ -468,8 +468,6 @@ async function loadHistory() {
     document.getElementById("history").textContent = "هنوز پاسخی ارسال نکرده‌اید.";
     return;
   }
-
-  document.getElementById("history").innerHTML = submissions.map(s => {
   currentSubmissions = submissions;
 
 document.getElementById("history").innerHTML = submissions.map(s => {
