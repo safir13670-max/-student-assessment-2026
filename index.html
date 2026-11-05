@@ -658,9 +658,11 @@ box.innerHTML = submissions.map(s => `
     box.textContent = "خطا در دریافت پاسخ‌ها: " + error.message;
   }
 } 
-  async function evaluateAnswer(submissionId) {
+async function evaluateAnswer(submissionId) {
   const box = document.getElementById("evaluation-" + submissionId);
   const teacherToken = sessionStorage.getItem("teacherToken");
+
+  if (!box) return;
 
   box.textContent = "در حال ارزیابی پاسخ...";
 
@@ -683,7 +685,6 @@ box.innerHTML = submissions.map(s => `
     if (!data.length) throw new Error("پاسخ پیدا نشد.");
 
     const answer = (data[0].answer_text || "").trim();
-
     const words = answer.split(/\s+/).filter(Boolean);
     const length = answer.length;
 
@@ -719,14 +720,28 @@ box.innerHTML = submissions.map(s => `
     box.innerHTML = `
       <div class="item">
         <h3>نتیجه ارزیابی اولیه</h3>
-        <h2>نمره پیشنهادی: ${score} از ۲۰</h2>
-        <p><b>بازخورد:</b></p>
-        <ul>
-          ${feedback.map(x => `<li>${escapeHTML(x)}</li>`).join("")}
-        </ul>
+
+        <label>نمره پیشنهادی (قابل ویرایش):</label>
+        <input
+          type="number"
+          min="0"
+          max="20"
+          step="0.25"
+          id="score-${submissionId}"
+          value="${score}"
+        >
+
+        <label>بازخورد مدرس (قابل ویرایش):</label>
+        <textarea id="comments-${submissionId}" rows="4">${escapeHTML(feedback.join("\n"))}</textarea>
+
+        <button type="button"
+          onclick="saveFeedback('${submissionId}')">
+          ثبت نمره و بازخورد
+        </button>
+
         <p class="muted">
-          این نمره صرفاً پیشنهادی و مبتنی بر معیارهای اولیه است.
-          مدرس باید صحت علمی پاسخ را بررسی و نمره نهایی را تأیید کند.
+          نمره اولیه بر اساس معیارهای ظاهری پاسخ پیشنهاد شده است.
+          مدرس باید صحت علمی پاسخ را بررسی کند.
         </p>
       </div>
     `;
@@ -734,8 +749,108 @@ box.innerHTML = submissions.map(s => `
     box.textContent = "خطا در ارزیابی: " + error.message;
   }
 }
-
 window.evaluateAnswer = evaluateAnswer;
+  async function saveFeedback(submissionId) {
+  const scoreInput = document.getElementById("score-" + submissionId);
+  const commentsInput = document.getElementById("comments-" + submissionId);
+  const box = document.getElementById("evaluation-" + submissionId);
+
+  const teacherToken = sessionStorage.getItem("teacherToken");
+  const teacherId = sessionStorage.getItem("teacherUserId");
+
+  const score = Number(scoreInput.value);
+  const comments = commentsInput.value.trim();
+
+  if (!teacherToken || !teacherId) {
+    box.textContent = "نشست مدرس معتبر نیست. دوباره وارد شوید.";
+    return;
+  }
+
+  if (
+    scoreInput.value === "" ||
+    !Number.isFinite(score) ||
+    score < 0 ||
+    score > 20
+  ) {
+    box.textContent = "نمره باید بین صفر تا ۲۰ باشد.";
+    return;
+  }
+
+  box.textContent = "در حال ذخیره نمره و بازخورد...";
+
+  try {
+    const headers = {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + teacherToken,
+      "Content-Type": "application/json"
+    };
+
+    const checkResponse = await fetch(
+      SUPABASE_URL +
+      "/rest/v1/feedback?select=id&submission_id=eq." +
+      encodeURIComponent(submissionId),
+      { headers }
+    );
+
+    if (!checkResponse.ok) {
+      throw new Error(await checkResponse.text());
+    }
+
+    const existing = await checkResponse.json();
+
+    let saveResponse;
+
+    if (existing.length > 0) {
+      saveResponse = await fetch(
+        SUPABASE_URL +
+        "/rest/v1/feedback?id=eq." +
+        encodeURIComponent(existing[0].id),
+        {
+          method: "PATCH",
+          headers: {
+            ...headers,
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({
+            score: score,
+            comments: comments
+          })
+        }
+      );
+    } else {
+      saveResponse = await fetch(
+        SUPABASE_URL + "/rest/v1/feedback",
+        {
+          method: "POST",
+          headers: {
+            ...headers,
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({
+            submission_id: submissionId,
+            teacher_id: teacherId,
+            score: score,
+            comments: comments
+          })
+        }
+      );
+    }
+
+    if (!saveResponse.ok) {
+      throw new Error(await saveResponse.text());
+    }
+
+    box.insertAdjacentHTML(
+      "beforeend",
+      '<p style="color:green">نمره و بازخورد با موفقیت ذخیره شد.</p>'
+    );
+
+  } catch (error) {
+    box.textContent = "خطا در ذخیره: " + error.message;
+  }
+}
+
+window.saveFeedback = saveFeedback;
   async function createAssignment() {
   const courseId = document.getElementById("teacherCourseSelect").value;
   const title = document.getElementById("assignmentTitle").value.trim();
