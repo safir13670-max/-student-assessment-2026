@@ -772,6 +772,7 @@ async function loadHistory() {
   }
 
  const submissions = await response.json();
+  console.log("تعداد پاسخ‌های دریافت‌شده:", submissions.length, submissions);
 
 const responseCount = document.getElementById("responseCount");
 
