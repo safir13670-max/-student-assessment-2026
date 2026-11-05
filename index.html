@@ -512,10 +512,10 @@ async function loadHistory() {
     </div>`;
   }).join("");
   const chartBox = document.getElementById("history");
+console.log("نمرات دریافت‌شده:", feedbackRows);
 
 const graded = submissions
-  console.log("نمرات دریافت‌شده:", feedbackRows);
-  .map(s => {
+
     const f = feedbackRows.find(x => x.submission_id === s.id);
     const assignment = currentAssignments.find(a => a.id === s.assignment_id);
 
