@@ -1142,8 +1142,13 @@ async function deleteCourse(courseId) {
     if (!response.ok) {
       throw new Error(await response.text());
     }
+const submissions = await response.json();
 
-    const submissions = await response.json();
+const responseCount = document.getElementById("responseCount");
+if (responseCount) {
+  responseCount.textContent = submissions.length;
+}
+
 const feedbackCountResponse = await fetch(
   SUPABASE_URL + "/rest/v1/feedback?select=id",
   {
