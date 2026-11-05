@@ -577,6 +577,7 @@ if (studentBox) studentBox.classList.add("hidden");
 if (teacherBox) teacherBox.classList.remove("hidden");
     await loadTeacherCourses();
     await loadTeacherSubmissions();
+    console.log("بارگذاری پاسخ‌های مدرس تمام شد");
     await loadAssignmentCount();
   } catch (error) {
     showMessage("teacherMessage", error.message || "خطا در ورود مدرس.");
@@ -956,6 +957,7 @@ document.getElementById("loginSection").classList.remove("hidden");
 
     document.getElementById("courseTitle").value = "";
     document.getElementById("courseDescription").value = "";
+    console.log("ورود به مرحله بارگذاری درس‌ها");
 await loadTeacherCourses();
     showMessage("courseMessage", "درس با موفقیت ثبت شد.");
 
