@@ -671,11 +671,30 @@ await loadTeacherCourses();
     }
 
     courses.forEach(course => {
-      const item = document.createElement("div");
-      item.className = "card";
-      item.textContent = course.title + " - " + (course.description || "");
-      box.appendChild(item);
+     const item = document.createElement("div");
+item.className = "card";
 
+const title = document.createElement("h3");
+title.textContent = course.title;
+
+const description = document.createElement("p");
+description.textContent = course.description || "";
+
+const editBtn = document.createElement("button");
+editBtn.textContent = "ویرایش درس";
+editBtn.type = "button";
+editBtn.onclick = () => editCourse(course.id);
+
+const deleteBtn = document.createElement("button");
+deleteBtn.textContent = "حذف درس";
+deleteBtn.type = "button";
+deleteBtn.onclick = () => deleteCourse(course.id);
+
+item.appendChild(title);
+item.appendChild(description);
+item.appendChild(editBtn);
+item.appendChild(deleteBtn);
+box.appendChild(item);
       const option = document.createElement("option");
       option.value = course.id;
       option.textContent = course.title;
