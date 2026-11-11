@@ -1286,7 +1286,7 @@ async function createStudentAccount() {
 }
 
 
-
+window.createStudentAccount = createStudentAccount;
 async function addStudentToSelectedCourse() {
   const studentId = document.getElementById("manageStudentSelect").value;
   const courseId = document.getElementById("manageCourseSelect").value;
