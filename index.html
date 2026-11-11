@@ -404,10 +404,12 @@ hr {
   <div class="stat-icon">📊</div>
   <h3>ارزیابی‌های انجام‌شده</h3>
   <div id="evaluationCount" class="stat-number">۰</div>
-  <p>تعداد پاسخ‌های ارزیابی‌شده</p>
+    <p>تعداد پاسخ‌های ارزیابی‌شده</p>
 </div>
-  <div class="card">
-    <h2>پنل مدیریت مدرس</h2>
+</div>
+
+<div class="card">
+  <h2>پنل مدیریت مدرس</h2>
     <p>به پنل مدیریت سامانه خوش آمدید.</p>
     <button class="secondary" onclick="teacherLogout()">خروج از پنل مدرس</button>
   </div>
@@ -424,7 +426,70 @@ hr {
     <h2>فهرست درس‌ها</h2>
     <div id="teacherCourses">درس‌ها اینجا نمایش داده می‌شوند.</div>
   </div>
+<div class="card">
+  <h2>🎓 مدیریت دانشجویان</h2>
+  <p>ایجاد حساب جدید و مدیریت عضویت دانشجویان در درس‌ها</p>
 
+  <hr>
+
+  <h3>۱. ایجاد حساب دانشجوی جدید</h3>
+
+  <input
+    id="newStudentName"
+    type="text"
+    placeholder="نام و نام خانوادگی دانشجو">
+
+  <input
+    id="newStudentCode"
+    type="text"
+    placeholder="کد دانشجویی">
+
+  <input
+    id="newStudentPassword"
+    type="password"
+    placeholder="رمز عبور دانشجو">
+
+  <select id="newStudentCourseSelect">
+    <option value="">انتخاب درس برای دانشجو (اختیاری)</option>
+  </select>
+
+  <button type="button" id="createStudentButton" disabled>
+    ایجاد حساب دانشجو
+  </button>
+
+  <div id="newStudentMessage"></div>
+
+  <hr>
+
+  <h3>۲. افزودن دانشجوی موجود به درس</h3>
+
+  <input
+    id="studentSearch"
+    type="text"
+    placeholder="جست‌وجو با نام یا کد دانشجویی">
+
+  <select id="manageStudentSelect">
+    <option value="">انتخاب دانشجو</option>
+  </select>
+
+  <select id="manageCourseSelect">
+    <option value="">انتخاب درس</option>
+  </select>
+
+  <button type="button" id="addStudentToCourse" disabled>
+    افزودن دانشجو به درس
+  </button>
+
+  <div id="manageStudentMessage"></div>
+
+  <hr>
+
+  <h3>۳. فهرست دانشجویان</h3>
+
+  <div id="teacherStudentList">
+    فهرست دانشجویان پس از اتصال به پایگاه داده نمایش داده می‌شود.
+  </div>
+</div>
   <div class="card">
     <h2>تعریف تکلیف</h2>
     <select id="teacherCourseSelect">
@@ -565,7 +630,10 @@ async function loginTeacher() {
 
     const profiles = await profileResponse.json();
     const role = profiles[0]?.role;
-
+console.log(
+  "نقش جدول:", role,
+  "| نقش توکن:", data.user.app_metadata?.role
+);
     if (!["teacher", "owner"].includes(role)) {
       throw new Error("این حساب دسترسی مدرس ندارد.");
     }
@@ -969,7 +1037,11 @@ await loadTeacherCourses();
 
   const box = document.getElementById("teacherCourses");
   const select = document.getElementById("teacherCourseSelect");
+const newStudentCourseSelect =
+  document.getElementById("newStudentCourseSelect");
 
+const manageCourseSelect =
+  document.getElementById("manageCourseSelect");
   try {
     const response = await fetch(
       SUPABASE_URL + "/rest/v1/courses?select=id,title,description&order=created_at.desc",
@@ -990,7 +1062,15 @@ if (courseCount) {
 }
     box.innerHTML = "";
     select.innerHTML = '<option value="">انتخاب درس</option>';
+if (newStudentCourseSelect) {
+  newStudentCourseSelect.innerHTML =
+    '<option value="">انتخاب درس برای دانشجو</option>';
+}
 
+if (manageCourseSelect) {
+  manageCourseSelect.innerHTML =
+    '<option value="">انتخاب درس</option>';
+}
     if (courses.length === 0) {
       box.textContent = "هنوز درسی ثبت نشده است.";
       return;
@@ -1021,10 +1101,26 @@ item.appendChild(description);
 item.appendChild(editBtn);
 item.appendChild(deleteBtn);
 box.appendChild(item);
-      const option = document.createElement("option");
-      option.value = course.id;
-      option.textContent = course.title;
-      select.appendChild(option);
+        const option = document.createElement("option");
+option.value = course.id;
+option.textContent = course.title;
+select.appendChild(option);
+
+// انتخاب‌گر ایجاد دانشجوی جدید
+if (newStudentCourseSelect) {
+  const option2 = document.createElement("option");
+  option2.value = course.id;
+  option2.textContent = course.title;
+  newStudentCourseSelect.appendChild(option2);
+}
+
+// انتخاب‌گر مدیریت عضویت دانشجو
+if (manageCourseSelect) {
+  const option3 = document.createElement("option");
+  option3.value = course.id;
+  option3.textContent = course.title;
+  manageCourseSelect.appendChild(option3);
+}
     });
 
   } catch (error) {
