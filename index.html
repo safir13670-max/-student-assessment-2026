@@ -1269,8 +1269,7 @@ async function createStudentAccount() {
   }
 }
 
-document.getElementById("createStudentButton")
-  ?.addEventListener("click", createStudentAccount);
+
 
  async function editCourse(courseId) {
   const teacherToken = sessionStorage.getItem("teacherToken");
@@ -1724,6 +1723,17 @@ document.getElementById("loginSection").classList.add("hidden");
   window.createAssignment = createAssignment;
   window.editCourse = editCourse;
 window.deleteCourse = deleteCourse;
+  window.addEventListener("DOMContentLoaded", function () {
+  const button = document.getElementById("createStudentButton");
+
+  if (button) {
+    button.disabled = false;
+    button.addEventListener("click", createStudentAccount);
+    console.log("دکمه ایجاد دانشجو متصل شد.");
+  } else {
+    console.error("دکمه ایجاد دانشجو پیدا نشد.");
+  }
+});
 </script>
 </body>
 </html>
