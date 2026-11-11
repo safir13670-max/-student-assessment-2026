@@ -630,6 +630,10 @@ async function loginTeacher() {
 
     const profiles = await profileResponse.json();
     const role = profiles[0]?.role;
+    console.log(
+  "نقش جدول:", role,
+  "| نقش توکن:", data.user.app_metadata?.role
+);
 console.log(
   "نقش جدول:", role,
   "| نقش توکن:", data.user.app_metadata?.role
@@ -649,7 +653,9 @@ if (loginBox) loginBox.classList.add("hidden");
 if (studentBox) studentBox.classList.add("hidden");
 if (teacherBox) teacherBox.classList.remove("hidden");
     await loadTeacherCourses();
-    await loadTeacherSubmissions();
+await loadTeacherStudents();
+await loadTeacherSubmissions();
+  
     console.log("بارگذاری پاسخ‌های مدرس تمام شد");
     await loadAssignmentCount();
   } catch (error) {
@@ -1127,6 +1133,75 @@ if (manageCourseSelect) {
     box.textContent = "خطا در دریافت درس‌ها: " + error.message;
   }
 }
+ async function loadTeacherStudents() {
+  const teacherToken = sessionStorage.getItem("teacherToken");
+  const list = document.getElementById("teacherStudentList");
+
+  if (!teacherToken || !list) return;
+
+  list.textContent = "در حال دریافت فهرست دانشجویان...";
+
+  try {
+    const response = await fetch(
+      SUPABASE_URL +
+      "/rest/v1/profiles?select=user_id,full_name,student_code&role=eq.student&order=full_name.asc",
+      {
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(await response.text());
+    }
+
+    const students = await response.json();
+
+    if (students.length === 0) {
+      list.textContent = "هنوز دانشجویی ثبت نشده است.";
+      return;
+    }
+
+    list.innerHTML = "";
+
+    students.forEach(student => {
+      const item = document.createElement("div");
+      item.className = "card";
+
+      const name = document.createElement("h3");
+      name.textContent = student.full_name || "بدون نام";
+
+      const code = document.createElement("p");
+      code.textContent = "کد دانشجویی: " +
+        (student.student_code || "ثبت نشده");
+
+      item.appendChild(name);
+      item.appendChild(code);
+      list.appendChild(item);
+    });
+
+    const search = document.getElementById("studentSearch");
+
+    if (search) {
+      search.oninput = function () {
+        const value = this.value.trim().toLowerCase();
+
+        Array.from(list.children).forEach(item => {
+          item.style.display =
+            item.textContent.toLowerCase().includes(value)
+              ? ""
+              : "none";
+        });
+      };
+    }
+
+  } catch (error) {
+    list.textContent =
+      "خطا در دریافت دانشجویان: " + error.message;
+  }
+} 
  async function editCourse(courseId) {
   const teacherToken = sessionStorage.getItem("teacherToken");
 
