@@ -665,7 +665,7 @@ await loadTeacherSubmissions();
     btn.disabled = false;
   }
 }
-
+window.loginTeacher = loginTeacher;
 async function login() {
   const code = document.getElementById("code").value.trim();
   const password = document.getElementById("password").value;
