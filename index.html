@@ -497,7 +497,14 @@ hr {
     </select>
     <input id="assignmentTitle" placeholder="عنوان تکلیف">
     <textarea id="assignmentInstructions" rows="4" placeholder="شرح تکلیف"></textarea>
-    <input id="assignmentDue" type="datetime-local">
+
+<textarea id="assignmentModelAnswer" rows="4"
+  placeholder="پاسخ معیار (اختیاری)"></textarea>
+
+<textarea id="assignmentGradingCriteria" rows="4"
+  placeholder="بارم‌بندی و معیارهای ارزیابی (اختیاری)"></textarea>
+
+<input id="assignmentDue" type="datetime-local">
     <button type="button" onclick="createAssignment()">ثبت تکلیف</button>
     <div id="assignmentMessage"></div>
   </div>
