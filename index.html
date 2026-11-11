@@ -1283,6 +1283,65 @@ async function createStudentAccount() {
 
 
 
+async function addStudentToSelectedCourse() {
+  const studentId = document.getElementById("manageStudentSelect").value;
+  const courseId = document.getElementById("manageCourseSelect").value;
+  const message = document.getElementById("manageStudentMessage");
+  const button = document.getElementById("addStudentToCourse");
+  const teacherToken = sessionStorage.getItem("teacherToken");
+
+  try {
+    if (!studentId || !courseId) {
+      throw new Error("لطفاً دانشجو و درس را انتخاب کنید.");
+    }
+
+    if (!teacherToken) {
+      throw new Error("نشست مدرس پیدا نشد؛ دوباره وارد شوید.");
+    }
+
+    button.disabled = true;
+    button.textContent = "در حال ثبت عضویت...";
+
+    const response = await fetch(
+      SUPABASE_URL + "/rest/v1/enrollments",
+      {
+        method: "POST",
+        headers: {
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken,
+          "Content-Type": "application/json",
+          "Prefer": "return=representation"
+        },
+        body: JSON.stringify({
+          student_id: studentId,
+          course_id: courseId
+        })
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      if (response.status === 409 ||
+          errorText.includes("23505")) {
+        throw new Error("این دانشجو از قبل در این درس عضو است.");
+      }
+
+      throw new Error("ثبت عضویت ناموفق بود: " + errorText);
+    }
+
+    message.textContent = "دانشجو با موفقیت به درس اضافه شد.";
+    message.style.color = "green";
+
+  } catch (error) {
+    message.textContent = error.message;
+    message.style.color = "red";
+  } finally {
+    button.disabled = false;
+    button.textContent = "افزودن دانشجو به درس";
+  }
+}
+
  async function editCourse(courseId) {
   const teacherToken = sessionStorage.getItem("teacherToken");
 
@@ -1735,17 +1794,21 @@ document.getElementById("loginSection").classList.add("hidden");
   window.createAssignment = createAssignment;
   window.editCourse = editCourse;
 window.deleteCourse = deleteCourse;
-  window.addEventListener("DOMContentLoaded", function () {
-  const button = document.getElementById("createStudentButton");
+ 
+window.addEventListener("DOMContentLoaded", function () {
+  const createButton = document.getElementById("createStudentButton");
 
-  if (button) {
-    button.disabled = false;
-    button.addEventListener("click", createStudentAccount);
+  if (createButton) {
+    createButton.disabled = false;
+    createButton.addEventListener("click", createStudentAccount);
     console.log("دکمه ایجاد دانشجو متصل شد.");
-  } else {
-    console.error("دکمه ایجاد دانشجو پیدا نشد.");
+  }
+
+  const addButton = document.getElementById("addStudentToCourse");
+
+  if (addButton) {
+    addButton.disabled = false;
+    addButton.addEventListener("click", addStudentToSelectedCourse);
+    console.log("دکمه افزودن دانشجو به درس متصل شد.");
   }
 });
-</script>
-</body>
-</html>
