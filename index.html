@@ -579,7 +579,7 @@ async function saveNewTeacherPassword() {
     showMessage("resetMessage", error.message);
   }
 }
-  window.loginTeacher = loginTeacher;
+  
 async function loginTeacher() {
   const email = document.getElementById("teacherEmail").value.trim();
   const password = document.getElementById("teacherPassword").value;
@@ -666,6 +666,10 @@ await loadTeacherSubmissions();
   }
 }
 window.loginTeacher = loginTeacher;
+ }
+
+window.loginTeacher = loginTeacher;
+
 async function login() {
   const code = document.getElementById("code").value.trim();
   const password = document.getElementById("password").value;
