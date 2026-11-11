@@ -1692,6 +1692,17 @@ window.copyEvaluationPrompt = copyEvaluationPrompt;
   if (!input || !display) return;
 
   const result = input.value.trim();
+    const scoreMatch = result.match(
+  /نمره\s*پیشنهادی\s*[:：]?\s*(\d+(?:[.,]\d+)?)\s*(?:از\s*۲۰)?/
+);
+
+if (scoreMatch) {
+  const scoreInput = document.getElementById("score-" + submissionId);
+
+  if (scoreInput) {
+    scoreInput.value = scoreMatch[1].replace(",", ".");
+  }
+}
 
   if (!result) {
     alert("ابتدا نتیجه ارزیابی ChatGPT را وارد کنید.");
