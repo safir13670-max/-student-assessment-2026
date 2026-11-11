@@ -1202,6 +1202,76 @@ if (manageCourseSelect) {
       "خطا در دریافت دانشجویان: " + error.message;
   }
 } 
+  
+async function createStudentAccount() {
+  const button = document.getElementById("createStudentButton");
+  const message = document.getElementById("newStudentMessage");
+
+  try {
+    const fullName = document.getElementById("newStudentName").value.trim();
+    const studentCode = document.getElementById("newStudentCode").value.trim();
+    const password = document.getElementById("newStudentPassword").value;
+    const courseId = document.getElementById("newStudentCourseSelect").value || null;
+
+    const teacherToken = sessionStorage.getItem("teacherToken");
+
+    if (!fullName || !studentCode || !password) {
+      throw new Error("لطفاً نام، کد دانشجویی و رمز عبور را وارد کنید.");
+    }
+
+    if (!teacherToken) {
+      throw new Error("نشست مدرس پیدا نشد؛ دوباره وارد پنل شوید.");
+    }
+
+    button.disabled = true;
+    button.textContent = "در حال ایجاد حساب...";
+
+    const response = await fetch(
+      SUPABASE_URL + "/functions/v1/create-student-account",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + teacherToken
+        },
+        body: JSON.stringify({
+          fullName,
+          studentCode,
+          password,
+          courseId
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || "ایجاد حساب انجام نشد.");
+    }
+
+    message.textContent = result.message;
+    message.style.color = "green";
+
+    document.getElementById("newStudentName").value = "";
+    document.getElementById("newStudentCode").value = "";
+    document.getElementById("newStudentPassword").value = "";
+    document.getElementById("newStudentCourseSelect").value = "";
+
+    await loadTeacherStudents();
+
+  } catch (error) {
+    message.textContent = error.message || "خطا در ایجاد حساب";
+    message.style.color = "red";
+  } finally {
+    button.disabled = false;
+    button.textContent = "ایجاد حساب دانشجو";
+  }
+}
+
+document.getElementById("createStudentButton")
+  ?.addEventListener("click", createStudentAccount);
+
  async function editCourse(courseId) {
   const teacherToken = sessionStorage.getItem("teacherToken");
 
