@@ -1740,13 +1740,15 @@ window.saveFeedback = saveFeedback;
           "Content-Type": "application/json",
           "Prefer": "return=representation"
         },
-        body: JSON.stringify({
-          course_id: courseId,
-          title: title,
-          instructions: instructions,
-          due_at: dueAt ? new Date(dueAt).toISOString() : null,
-          created_by: teacherUserId
-        })
+     body: JSON.stringify({
+  course_id: courseId,
+  title: title,
+  instructions: instructions,
+  model_answer: document.getElementById("assignmentModelAnswer").value.trim(),
+  grading_criteria: document.getElementById("assignmentGradingCriteria").value.trim(),
+  due_at: dueAt ? new Date(dueAt).toISOString() : null,
+  created_by: teacherUserId
+})
       }
     );
 
@@ -1756,6 +1758,8 @@ window.saveFeedback = saveFeedback;
 
     document.getElementById("assignmentTitle").value = "";
     document.getElementById("assignmentInstructions").value = "";
+    document.getElementById("assignmentModelAnswer").value = "";
+document.getElementById("assignmentGradingCriteria").value = "";
     document.getElementById("assignmentDue").value = "";
 
     showMessage("assignmentMessage", "تکلیف با موفقیت ثبت شد.");
