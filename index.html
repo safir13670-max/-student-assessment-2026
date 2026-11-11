@@ -1528,7 +1528,7 @@ async function evaluateAnswer(submissionId) {
     const response = await fetch(
       SUPABASE_URL + "/rest/v1/submissions?id=eq." +
       encodeURIComponent(submissionId) +
-      "&select=id,answer_text,assignment_id",
+    "&select=id,answer_text,assignment_id",
       {
         headers: {
           "apikey": SUPABASE_KEY,
@@ -1542,72 +1542,107 @@ async function evaluateAnswer(submissionId) {
     const data = await response.json();
     if (!data.length) throw new Error("پاسخ پیدا نشد.");
 
-    const answer = (data[0].answer_text || "").trim();
-    const words = answer.split(/\s+/).filter(Boolean);
-    const length = answer.length;
-
-    let score = 0;
-    let feedback = [];
-
-    if (length < 20) {
-      score = 3;
-      feedback.push("پاسخ بسیار کوتاه است و نیاز به توضیح بیشتری دارد.");
-    } else if (length < 80) {
-      score = 8;
-      feedback.push("پاسخ اولیه است؛ جزئیات بیشتری اضافه کنید.");
-    } else if (length < 180) {
-      score = 13;
-      feedback.push("پاسخ از توضیحات مناسبی برخوردار است.");
-    } else {
-      score = 16;
-      feedback.push("پاسخ از نظر حجم توضیحات نسبتاً کامل است.");
+   const answer = (data[0].answer_text || "").trim();
+const assignmentId = data[0].assignment_id;
+console.log("شناسه تکلیف:", assignmentId);
+    const assignmentResponse = await fetch(
+  SUPABASE_URL +
+  "/rest/v1/assignments?id=eq." +
+  encodeURIComponent(assignmentId) +
+  "&select=title,instructions,model_answer,grading_criteria",
+  {
+    headers: {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + teacherToken
     }
+  }
+);
 
-    if (words.length >= 30) {
-      score += 2;
-      feedback.push("توضیحات نسبتاً مفصل ارائه شده است.");
-    }
+if (!assignmentResponse.ok) {
+  throw new Error("دریافت اطلاعات تکلیف ناموفق بود.");
+}
 
-    if (/[.!؟]/.test(answer)) {
-      score += 1;
-      feedback.push("از نشانه‌گذاری در متن استفاده شده است.");
-    }
+const assignmentData = await assignmentResponse.json();
 
-    score = Math.min(score, 20);
+if (!assignmentData.length) {
+  throw new Error("اطلاعات تکلیف پیدا نشد.");
+}
 
-    box.innerHTML = `
-      <div class="item">
-        <h3>نتیجه ارزیابی اولیه</h3>
+const assignment = assignmentData[0];
+    console.log("اطلاعات تکلیف:", assignment);
+let score = 0;
+let feedback = ["آماده ارزیابی علمی در ChatGPT"];
 
-        <label>نمره پیشنهادی (قابل ویرایش):</label>
-        <input
-          type="number"
-          min="0"
-          max="20"
-          step="0.25"
-          id="score-${submissionId}"
-          value="${score}"
-        >
+ const evaluationPrompt = `
+نقش شما: ارزیاب علمی و آموزشی.
 
-        <label>بازخورد مدرس (قابل ویرایش):</label>
-        <textarea id="comments-${submissionId}" rows="4">${escapeHTML(feedback.join("\n"))}</textarea>
+عنوان تکلیف:
+${assignment.title}
 
-        <button type="button"
-          onclick="saveFeedback('${submissionId}')">
-          ثبت نمره و بازخورد
-        </button>
+شرح تکلیف:
+${assignment.instructions}
 
-        <p class="muted">
-          نمره اولیه بر اساس معیارهای ظاهری پاسخ پیشنهاد شده است.
-          مدرس باید صحت علمی پاسخ را بررسی کند.
-        </p>
-      </div>
-    `;
-  } catch (error) {
+پاسخ معیار مدرس:
+${assignment.model_answer || "تعیین نشده"}
+
+بارم‌بندی:
+${assignment.grading_criteria || "بر اساس معیارهای علمی و آموزشی"}
+
+پاسخ دانشجو:
+${answer}
+
+لطفاً پاسخ را از نظر صحت علمی، ارتباط با سؤال، کامل بودن،
+استدلال و محاسبات بررسی کن.
+
+خروجی:
+۱. نمره پیشنهادی از ۲۰
+۲. نقاط قوت
+۳. اشتباهات علمی
+۴. مطالب ناقص
+۵. بازخورد اصلاحی خطاب به دانشجو
+۶. پاسخ صحیح پیشنهادی
+
+نمره را بر اساس محتوای علمی تعیین کن، نه طول پاسخ.
+`;
+
+box.innerHTML = `
+  <div class="item">
+    <h3>آماده‌سازی ارزیابی علمی</h3>
+
+    <p>اطلاعات سؤال و پاسخ دانشجو آماده شده است.</p>
+
+    <textarea id="prompt-${submissionId}" rows="16">${escapeHTML(evaluationPrompt)}</textarea>
+
+    <button type="button"
+      onclick="copyEvaluationPrompt('${submissionId}')">
+      کپی متن ارزیابی
+    </button>
+
+    <p class="muted">
+      متن را در ChatGPT وارد کنید و نتیجه ارزیابی را دریافت کنید.
+      سپس نمره و بازخورد را در سامانه ثبت کنید.
+    </p>
+  </div>
+`;
     box.textContent = "خطا در ارزیابی: " + error.message;
   }
 }
 window.evaluateAnswer = evaluateAnswer;
+  async function copyEvaluationPrompt(submissionId) {
+  const prompt = document.getElementById("prompt-" + submissionId);
+
+  if (!prompt) return;
+
+  try {
+    await navigator.clipboard.writeText(prompt.value);
+    alert("متن ارزیابی کپی شد. آن را در ChatGPT وارد کنید.");
+  } catch (error) {
+    prompt.select();
+    alert("متن را انتخاب کرده‌ایم؛ با Ctrl+C کپی کنید.");
+  }
+}
+
+window.copyEvaluationPrompt = copyEvaluationPrompt;
   async function saveFeedback(submissionId) {
   const scoreInput = document.getElementById("score-" + submissionId);
   const commentsInput = document.getElementById("comments-" + submissionId);
