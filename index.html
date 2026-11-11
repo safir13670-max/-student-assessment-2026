@@ -1158,7 +1158,19 @@ if (manageCourseSelect) {
     }
 
     const students = await response.json();
+const studentSelect = document.getElementById("manageStudentSelect");
 
+if (studentSelect) {
+  studentSelect.innerHTML = '<option value="">انتخاب دانشجو</option>';
+
+  students.forEach(student => {
+    const option = document.createElement("option");
+    option.value = student.user_id;
+    option.textContent =
+      student.full_name + " - " + (student.student_code || "بدون کد");
+    studentSelect.appendChild(option);
+  });
+}
     if (students.length === 0) {
       list.textContent = "هنوز دانشجویی ثبت نشده است.";
       return;
