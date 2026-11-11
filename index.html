@@ -1676,8 +1676,9 @@ window.evaluateAnswer = evaluateAnswer;
   if (!prompt) return;
 
   try {
-    await navigator.clipboard.writeText(prompt.value);
-    alert("متن ارزیابی کپی شد. آن را در ChatGPT وارد کنید.");
+ await navigator.clipboard.writeText(prompt.value);
+window.open("https://chatgpt.com/", "_blank");
+alert("متن ارزیابی کپی شد. آن را در ChatGPT وارد کنید.");
   } catch (error) {
     prompt.select();
     alert("متن را انتخاب کرده‌ایم؛ با Ctrl+C کپی کنید.");
